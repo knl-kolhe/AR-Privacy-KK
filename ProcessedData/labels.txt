@@ -1,0 +1,6 @@
+labels for the CPU values:
+column 0: Firebase Barcode scanner in app CPU values
+column 1: Firebase Object detection in app CPU values
+column 2: Firebase Text recognition in app CPU values
+column 3: Firebase Face detection in app CPU values
+
