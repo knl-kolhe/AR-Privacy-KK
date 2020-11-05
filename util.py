@@ -274,8 +274,10 @@ def plot_confusion_matrix(cm,
         plt.xticks(tick_marks, target_names, rotation=45)
         plt.yticks(tick_marks, target_names)
 
-    if normalize:
+    if normalize==True:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    elif normalize=='all':
+        cm = cm.astype('float') / cm.sum()
 
 
     thresh = cm.max() / 1.5 if normalize else cm.max() / 2

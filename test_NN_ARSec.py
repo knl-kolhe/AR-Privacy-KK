@@ -37,5 +37,5 @@ print('Accuracy on X_test is: %.5f' % (accuracy*100))
 cm_NN = confusion_matrix(y_test, np.round(y_pred))
 plot_confusion_matrix(cm_NN,
                       target_names = ["Honest", "Malicious"],
-                      title = "training Confusion Matrix", normalize=True,
+                      title = "training Confusion Matrix", normalize='all',
                       xLabel = "Predicted Category", yLabel = "Actual Category")
