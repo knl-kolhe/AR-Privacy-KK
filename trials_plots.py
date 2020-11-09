@@ -35,10 +35,10 @@ for i in range(total):
     
 
 ksTest_cm = confusion_matrix(labels, pred_ks)
-plot_confusion_matrix(ksTest_cm, ["Honest", "Mal"],title="KS-Test for homogeneity test", xLabel="Predicted", yLabel="Actual")
+plot_confusion_matrix(ksTest_cm, ["Honest", "Mal"],title="KS-Test for homogeneity test", normalize='all', xLabel="Predicted", yLabel="Actual")
 
 tTest_cm = confusion_matrix(labels, pred_t)
-plot_confusion_matrix(tTest_cm, ["Honest", "Mal"], title = "T-Test for homogeneity test", xLabel="Predicted", yLabel="Actual")
+plot_confusion_matrix(tTest_cm, ["Honest", "Mal"], title = "T-Test for homogeneity test", normalize='all', xLabel="Predicted", yLabel="Actual")
 
 # ksEdge, tEdge, ks_cm, t_cm = stat_test(honest_cpu[:,0], "Honest App")
 # ksEdge, tEdge, ks_cm, t_cm = stat_test(mal_cpu[:,0], "Malicious App")
