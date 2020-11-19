@@ -10,8 +10,8 @@ import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
-data = pd.read_csv("./ProcessedData/parsed_cpu_values.csv",header=None)
-labels = pd.read_csv("./ProcessedData/labels.csv",header=None)
+data = pd.read_csv("./LiveAppsProcessedData/parsed_cpu_values.csv",header=None)
+labels = pd.read_csv("./LiveAppsProcessedData/labels.csv",header=None)
 labels = np.sum(labels,1)-1
 labels = labels[np.mod(np.arange(labels.size),5)==0]
 
