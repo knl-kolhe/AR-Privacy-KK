@@ -12,32 +12,23 @@ from statsmodels.distributions.empirical_distribution import ECDF
 from scipy import stats
 from scipy import ndimage
 from util import *
-# from combine import *
-# from sklearn.metrics import plot_confusion_matrix
+import argparse
+
+parser = argparse.ArgumentParser(
+    description='preprocessing data')
+
+parser.add_argument('--hon_CPU', default="./RawData/Barcode-9min.2020-10-07.170856.csv", type=str,
+                    help='The path to the raw trace from an honest app.')
+parser.add_argument('--mal_CPU', default="./RawData/Barcode-Text-9min.2020-10-07.164217.csv", type=str,
+                    help='The path to the raw trace from a malicious app.')
+parser.add_argument('--stat_example', action='store_true',
+                    help="Include flag to get the statistical analysis of the respective traces")
+args = parser.parse_args()
+
 
    
-
-# df_hon = pd.read_csv("./Videos Dataset/Barcode-Text/CombinedData/Barcode-Text-Data.csv")
-df_hon = pd.read_csv("./Videos Dataset/Object-Text/CombinedData/Combined-headless_fb-Object-Text-13pt5min.csv")
-df_mal = pd.read_csv("./Videos Dataset/Object-Text/CombinedData/Combined-headless_fb_mal-Object-Text-13pt5min.csv")
-
-
-# honest_cpu = df_hon["Honest-Barcode-Text-Handheld-NonHeadless-CPU"]
-# mal_cpu = df_hon["Mal-Barcode-Text-Handheld-NonHeadless-CPU"]
-key = "trial1"
-honest_cpu = df_hon[key]
-mal_cpu = df_mal[key]
-
-
-
-honest_cpu = remove_nan(honest_cpu)
-# honest_mem = remove_NaN(honest_mem)
-mal_cpu = remove_nan(mal_cpu)
-# mal_mem = remove_NaN(mal_mem)
-
-
-# smooth_honest_cpu = ndimage.gaussian_filter1d(honest_cpu,2)
-# smooth_mal_cpu = ndimage.gaussian_filter1d(mal_cpu,2)
+honest_cpu = return_cpu(args.hon_CPU, dataset=False)[0,:]
+mal_cpu = return_cpu(args.mal_CPU, dataset=False)[0,:]
 
 # CPU values Graph honest
 plt.plot(np.arange(0,len(honest_cpu),1),honest_cpu,label='Honest')
@@ -73,42 +64,29 @@ plt.xlabel('Seconds')
 plt.ylabel('% utilization')
 plt.show()
 
-# Memory values Graph Honest vs Malicious
-# plt.plot(np.arange(0,len(honest_mem),1),honest_mem,label='Honest')
-# plt.plot(np.arange(0,len(mal_mem),1),mal_mem,label='Malicious')
-# # plt.axvline(x=25,ymin=0,ymax=5,c='g')
-# # plt.ylim(0,100)
-# plt.legend()
-# plt.title('Memory values')
-# plt.xlabel('Seconds')
-# plt.ylabel('% utilization')
-# plt.show()
+if(args.stat_example):
+    ksEdge, tEdge, ks_cm, t_cm = stat_test(honest_cpu, "Honest App")
+    drawGraph(ksEdge, "Honest App KS-Test")
+    drawGraph(tEdge, "Honest App T-Test")
+    plot_confusion_matrix(ks_cm,
+                          target_names = ["Baseline", "Part1", "Part2"],
+                          title = "Honest App KS-Test")
+    plot_confusion_matrix(t_cm,
+                          target_names = ["Baseline", "Part1", "Part2"],
+                          title = "Honest App T-Test")
+    
+    
+    
+    ksEdge, tEdge, ks_cm, t_cm = stat_test(mal_cpu, "Malicious App")
+    drawGraph(ksEdge,"Malicious App KS-Test")
+    drawGraph(tEdge, "Malicious App T-Test")
+    plot_confusion_matrix(ks_cm,
+                          target_names = ["Baseline", "Part1", "Part2"],
+                          title = "Malicious App KS-Test")
+    plot_confusion_matrix(t_cm,
+                          target_names = ["Baseline", "Part1", "Part2"],
+                          title = "Malicious App T-Test")
 
-ksEdge, tEdge, ks_cm, t_cm = stat_test(honest_cpu[:,0], "Honest App")
-drawGraph(ksEdge, "Honest App KS-Test")
-drawGraph(tEdge, "Honest App T-Test")
-plot_confusion_matrix(ks_cm,
-                      target_names = ["Baseline", "Part1", "Part2"],
-                      title = "Honest App KS-Test")
-plot_confusion_matrix(t_cm,
-                      target_names = ["Baseline", "Part1", "Part2"],
-                      title = "Honest App T-Test")
-
-
-
-ksEdge, tEdge, ks_cm, t_cm = stat_test(mal_cpu[:,0], "Malicious App")
-drawGraph(ksEdge,"Malicious App KS-Test")
-drawGraph(tEdge, "Malicious App T-Test")
-plot_confusion_matrix(ks_cm,
-                      target_names = ["Baseline", "Part1", "Part2"],
-                      title = "Malicious App KS-Test")
-plot_confusion_matrix(t_cm,
-                      target_names = ["Baseline", "Part1", "Part2"],
-                      title = "Malicious App T-Test")
-
-# print("Smoothened using Gaussian sigma=2")
-# stat_test(smooth_honest_cpu, "Honest App")
-# stat_test(smooth_mal_cpu, "Malicious App")
 
 
 

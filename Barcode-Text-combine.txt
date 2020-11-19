@@ -1,3 +1,0 @@
-file './Videos Dataset/Images/Noise/Noise.mp4'
-file './Videos Dataset/Images/Barcode/Barcode.mp4'
-file './Videos Dataset/Images/Text/Text.mp4'

@@ -8,10 +8,10 @@ Created on Mon Aug 31 10:54:28 2020
 import pandas as pd
 import numpy as np
 import os
-import re
 import argparse
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
+from util import return_cpu
 
 parser = argparse.ArgumentParser(
     description='preprocessing data')
@@ -23,11 +23,10 @@ parser.add_argument('--op_folder', default="./ProcessedData/", type=str,
 parser.add_argument('--scale_data', action='store_true', 
                     help='To scale the data horizontally into a range of 0 to 1 or not.')
 parser.add_argument('--create_dataset', action='store_true', 
-                    help='add flag to just parse all CPU values from csv trace files and output to csv with labels')
-#parser.add_argument('--create_dataset', default=True, type=bool,
-#                    help='False to just parse all CPU values from csv trace files and output to csv with labels')
+                    help='Include flag to create a structured dataset (Fixed rows x Fixed Columns)\
+                     which can be used for training. Do not include flag if you just want to parse all values')
 parser.add_argument('--per_segment', default=30, type=int,
-                    help='the length of each tuple in the dataset will be 18 * per_segment')
+                    help='The length of each tuple in the dataset will be 18 * per_segment')
 parser.add_argument('--test_size', default=0.33, type=float,
                     help='The size of the test set. Default 33% of all data is test data')
 args = parser.parse_args()
@@ -39,63 +38,7 @@ if args.create_dataset:
 else:
     num_samples_ = 1
     per_segment_ = args.per_segment
-    
 
-    
-
-def return_cpu(filename: str, num_samples: int=5, per_segment: int=30, dataset = True) -> np.array:
-    
-    with open(filename) as file_data:
-        file_data = file_data.read()
-        file_data = file_data.split("\n")
-        while 'TRIAL' not in file_data[0]:
-            file_data.pop(0)
-        while not file_data[-1].split(',')[0].isnumeric():
-            file_data.pop()
-        for i, each_row in enumerate(file_data):
-            file_data[i] = each_row.split(",")
-        
-    temp_df = pd.DataFrame(file_data[1:], columns=file_data[0])
-        
-    for i, val in enumerate(temp_df['CPU_PERC']):
-        if re.match(r'^-?\d+(?:\.\d+)?$', val) is None:
-            if re.match(r'^-?\d+(?:\.\d+)?$', temp_df['MEM_PERC'].iloc[i]) is not None:
-                temp_df['CPU_PERC'].iloc[i] = temp_df['MEM_PERC'].iloc[i]
-            else:
-                temp_df['CPU_PERC'].iloc[i] = temp_df['CPU_PERC'].iloc[i-1]
-    
-    cpu_arr = temp_df['CPU_PERC']
-    
-    
-    
-    def return_sections(cpu_arr):
-        section_len = int(len(cpu_arr)/18)
-        i=0
-        while i<18:
-            yield cpu_arr[section_len*i:section_len*(i+1)]
-            i+=1
-#        for i in range(0,len(cpu_arr)-section_len,section_len):
-#            yield cpu_arr[i:i+section_len]
-    
-#    num_samples = 5
-    return_arr = []
-    for i in range(num_samples):
-        selected = []
-#        per_segment = 30
-        if(per_segment>int(len(cpu_arr)/18)):
-            replace_flag = True
-        else:
-            replace_flag = False        
-        for section in return_sections(cpu_arr):
-            if dataset:
-                choice = np.random.choice(section, per_segment, replace=replace_flag)
-    #            print(len(choice), len(section))
-                selected.extend(choice)                
-            else:
-                selected.extend(section)
-                # print(len(section))
-        return_arr.append(selected)
-    return np.array(return_arr, dtype=np.float64)
 
 files = [filename for filename in os.listdir(args.raw_data) if filename.endswith(".csv")]
 

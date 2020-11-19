@@ -56,7 +56,7 @@ def create_video(Folder, durationMult):
 
     os.system(command)
     
-#    os.remove(f"./{Folder[0]}-{Folder[1]}-combine.txt")
+   os.remove(f"./{Folder[0]}-{Folder[1]}-combine.txt")
 
 VideosList = [["Barcode","Text"],["Object","Text"],["Face","Text"]]
 for videoName in VideosList:

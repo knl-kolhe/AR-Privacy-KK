@@ -9,9 +9,20 @@ from util import *
 import pandas as pd
 import numpy as np
 from sklearn.metrics import confusion_matrix
+import argparse
 
-data = pd.read_csv("./LiveAppsProcessedData/parsed_cpu_values.csv",header=None)
-labels = pd.read_csv("./LiveAppsProcessedData/labels.csv",header=None)
+parser = argparse.ArgumentParser(
+    description='preprocessing data')
+
+parser.add_argument('--raw_CPU', default="./ProcessedData/parsed_cpu_values.csv", type=str,
+                    help='The path to the file which contains the parsed cpu values for the traces.')
+parser.add_argument('--labels', default="./ProcessedData/labels.csv", type=str,
+                    help='The path to the csv file containing all the labels for the respective CPU trace')
+args = parser.parse_args()
+
+
+data = pd.read_csv(args.raw_CPU,header=None)
+labels = pd.read_csv(args.labels,header=None)
 labels = np.sum(labels,1)-1
 labels = labels[np.mod(np.arange(labels.size),5)==0]
 

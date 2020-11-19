@@ -14,6 +14,7 @@ from scipy import ndimage
 from sklearn.preprocessing import MinMaxScaler
 import networkx as nx
 from sklearn.metrics import plot_confusion_matrix
+import re
 
 def cal_p1(arr):
     return int(len(arr)/3)-5
@@ -297,3 +298,51 @@ def is_mal(graph):
         if tuples[2]>0.05:
             return False
     return True
+
+def return_cpu(filename: str, num_samples: int=1, per_segment: int=30, dataset = True) -> np.array:
+    
+    with open(filename) as file_data:
+        file_data = file_data.read()
+        file_data = file_data.split("\n")
+        while 'TRIAL' not in file_data[0]:
+            file_data.pop(0)
+        while not file_data[-1].split(',')[0].isnumeric():
+            file_data.pop()
+        for i, each_row in enumerate(file_data):
+            file_data[i] = each_row.split(",")
+        
+    temp_df = pd.DataFrame(file_data[1:], columns=file_data[0])
+        
+    for i, val in enumerate(temp_df['CPU_PERC']):
+        if re.match(r'^-?\d+(?:\.\d+)?$', val) is None:
+            if re.match(r'^-?\d+(?:\.\d+)?$', temp_df['MEM_PERC'].iloc[i]) is not None:
+                temp_df['CPU_PERC'].iloc[i] = temp_df['MEM_PERC'].iloc[i]
+            else:
+                temp_df['CPU_PERC'].iloc[i] = temp_df['CPU_PERC'].iloc[i-1]
+    
+    cpu_arr = temp_df['CPU_PERC']
+    
+    
+    
+    def return_sections(cpu_arr):
+        section_len = int(len(cpu_arr)/18)
+        i=0
+        while i<18:
+            yield cpu_arr[section_len*i:section_len*(i+1)]
+            i+=1
+
+    return_arr = []
+    for i in range(num_samples):
+        selected = []
+        if(per_segment>int(len(cpu_arr)/18)):
+            replace_flag = True
+        else:
+            replace_flag = False        
+        for section in return_sections(cpu_arr):
+            if dataset:
+                choice = np.random.choice(section, per_segment, replace=replace_flag)
+                selected.extend(choice)                
+            else:
+                selected.extend(section)
+        return_arr.append(selected)
+    return np.array(return_arr, dtype=np.float64)

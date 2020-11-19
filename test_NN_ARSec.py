@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('--data_path', default="./ProcessedData/", type=str,
                     help='Path to data files X_train, y_train, X_test, y_test')
-parser.add_argument('--model_path', default="./trained_model_20", type=str,
+parser.add_argument('--model_path', default="./trained_model/trained_model_20.h5", type=str,
                     help='Path for trained model')
 args = parser.parse_args()
 
@@ -37,5 +37,5 @@ print('Accuracy on X_test is: %.5f' % (accuracy*100))
 cm_NN = confusion_matrix(y_test, np.round(y_pred))
 plot_confusion_matrix(cm_NN,
                       target_names = ["Honest", "Malicious"],
-                      title = "training Confusion Matrix", normalize='all',
+                      title = "training Confusion Matrix", normalize=True,
                       xLabel = "Predicted Category", yLabel = "Actual Category")
