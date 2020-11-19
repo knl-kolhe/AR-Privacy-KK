@@ -20,12 +20,16 @@ parser.add_argument('--raw_data', default="./RawData/", type=str,
                     help='The folder which contains all the CPU traces')
 parser.add_argument('--op_folder', default="./ProcessedData/", type=str,
                     help='The folder which contains the preprocessed data in csv format')
-parser.add_argument('--scale_data', default=True, type=bool,
+parser.add_argument('--scale_data', action='store_true', 
                     help='To scale the data horizontally into a range of 0 to 1 or not.')
-parser.add_argument('--create_dataset', default=True, type=bool,
-                    help='False to just parse all CPU values from csv trace files and output to csv with labels')
+parser.add_argument('--create_dataset', action='store_true', 
+                    help='add flag to just parse all CPU values from csv trace files and output to csv with labels')
+#parser.add_argument('--create_dataset', default=True, type=bool,
+#                    help='False to just parse all CPU values from csv trace files and output to csv with labels')
 parser.add_argument('--per_segment', default=30, type=int,
                     help='the length of each tuple in the dataset will be 18 * per_segment')
+parser.add_argument('--test_size', default=0.33, type=float,
+                    help='The size of the test set. Default 33% of all data is test data')
 args = parser.parse_args()
 
 
@@ -35,6 +39,8 @@ if args.create_dataset:
 else:
     num_samples_ = 1
     per_segment_ = args.per_segment
+    
+
     
 
 def return_cpu(filename: str, num_samples: int=5, per_segment: int=30, dataset = True) -> np.array:
@@ -53,7 +59,10 @@ def return_cpu(filename: str, num_samples: int=5, per_segment: int=30, dataset =
         
     for i, val in enumerate(temp_df['CPU_PERC']):
         if re.match(r'^-?\d+(?:\.\d+)?$', val) is None:
-            temp_df['CPU_PERC'].iloc[i] = temp_df['MEM_PERC'].iloc[i]
+            if re.match(r'^-?\d+(?:\.\d+)?$', temp_df['MEM_PERC'].iloc[i]) is not None:
+                temp_df['CPU_PERC'].iloc[i] = temp_df['MEM_PERC'].iloc[i]
+            else:
+                temp_df['CPU_PERC'].iloc[i] = temp_df['CPU_PERC'].iloc[i-1]
     
     cpu_arr = temp_df['CPU_PERC']
     
@@ -94,7 +103,7 @@ final_labels = []
 final_data = []
 for filename in files:
     temp = filename.split("-")[:2]
-    label = [0]*4
+    label = [0]*5
     #naming scheme needs more work but for now this is fine 5th October 2020
     if "Barcode" in temp:
         label[0] = 1
@@ -103,11 +112,14 @@ for filename in files:
     if "Text" in temp:
         label[2] = 1
     if "Face" in temp:
-        label[3] = 1        
+        label[3] = 1   
+    if "FaceFilter" in temp:
+        label[4] = 1   
+    print(filename,temp)
     final_data.extend(return_cpu(args.raw_data+filename, num_samples=num_samples_,per_segment = per_segment_, dataset=args.create_dataset))
     # if(not len(final_data[-1])==18*per_segment_):
     #     raise Exception(f"Length of returned array not equal to {18*per_segment_}")
-    print(filename,temp)
+    
     for i in range(num_samples_):
         final_labels.append(label)
 
@@ -121,6 +133,8 @@ label = np.zeros(final_labels.shape[0])
 for i in range(final_labels.shape[0]):
     label[i] = sum(final_labels[i,:])-1
 
+print(f"Option for create dataset: {args.create_dataset}")
+
 if args.create_dataset:
     final_data_scaled = final_data
     if args.scale_data:    
@@ -128,7 +142,8 @@ if args.create_dataset:
         for i in range(final_data_scaled.shape[0]):
             final_data_scaled[i,:] = scaler.fit_transform(final_data_scaled[i,:].reshape(-1,1))[:,0]
     
-    X_train, X_test, y_train, y_test = train_test_split(final_data_scaled, label, test_size=0.33)
+    X_train, X_test, y_train, y_test = train_test_split(final_data_scaled, label, test_size=args.test_size)
+    
     
     np.savetxt(args.op_folder+"data.csv", final_data_scaled, delimiter=",")
     np.savetxt(args.op_folder+"labels.csv", final_labels, delimiter=",")

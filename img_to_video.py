@@ -52,11 +52,11 @@ def create_video(Folder, durationMult):
         opfile.write(f"file '{baselineFolder+'/Noise.mp4'}'\nfile '{part1Folder+'/'+Folder[0]+'.mp4'}'\nfile '{part2Folder+'/'+Folder[1]+'.mp4'}'")
         opfile.close()
     
-    command = f'ffmpeg -f concat -safe 0 -i {folderName}-combine.txt -c copy "{video_folder+video_name}.mp4"'
+    command = f'ffmpeg -f concat -safe 0 -i {folderName}-combine.txt -c copy "{video_folder+video_name}.mp4" -y'
 
     os.system(command)
     
-    os.remove(f"./{Folder[0]}-{Folder[1]}-combine.txt")
+#    os.remove(f"./{Folder[0]}-{Folder[1]}-combine.txt")
 
 VideosList = [["Barcode","Text"],["Object","Text"],["Face","Text"]]
 for videoName in VideosList:
